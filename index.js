@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const setRateLimit = require('express-rate-limit');
 
 require('dotenv').config()
 
@@ -20,8 +21,29 @@ app.use(cors());
 // Parse JSON request body
 app.use(express.json());
 
+const rateLimitPerMinuteLLM = setRateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10,
+    message: "Too many request for LLM API, please try again in 1 minute.",
+    headers: true,
+});
+
+const rateLimitPerDayLLM = setRateLimit({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    max: 1000,
+    message: "Too many requests for LLM API, please try again tomorrow.",
+    headers: true,
+});
+
+const rateLimitPerDayGoogle = setRateLimit({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    max: 100,
+    message: "Too many request for Google API, please try again tomorrow",
+    headers: true,
+});
+
 // Route to handle requests to /api/llm/prompt
-app.post('/api/llm/prompt', (req, res) => {
+app.post('/api/llm/prompt', rateLimitPerMinuteLLM, rateLimitPerDayLLM, (req, res) => {
     console.log('[+] Received request to /api/llm/prompt');
 
     const body = {
@@ -51,7 +73,7 @@ app.post('/api/llm/prompt', (req, res) => {
         });
 });
 
-app.get('/api/search', (req, res) => {
+app.get('/api/search', rateLimitPerDayGoogle, (req, res) => {
     const query = req.query.q //  search query parameter
     const url = `${GOOGLE_SEARCH_API_URL}?key=${GOOGLE_SEARCH_API_KEY}&cx=${GOOGLE_SEARCH_CX}&q=${query}&format=json`;
     needle('get', url)
@@ -67,5 +89,5 @@ app.get('/api/search', (req, res) => {
         });
 });
 
-app.listen(PORT, () => console.log('SERVER RUNNING ON 8000'));
+app.listen(PORT, () => console.log(`SERVER RUNNING ON PORT ${PORT}`));
 
