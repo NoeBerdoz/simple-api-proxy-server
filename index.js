@@ -8,7 +8,8 @@ const needle = require('needle');
 const app = new express();
 const PORT = process.env.PORT || 8000;
 
-const LLM_API_URL = process.env.LLM_API_URL;
+const LLM_API_PROMPT_URL = process.env.LLM_API_PROMPT_URL;
+const LLM_API_CHAT_URL = process.env.LLM_API_CHAT_URL;
 const LLM_API_KEY = process.env.LLM_API_KEY;
 
 const GOOGLE_SEARCH_API_URL = process.env.GOOGLE_SEARCH_API_URL;
@@ -48,19 +49,52 @@ app.post('/api/llm/prompt', rateLimitPerMinuteLLM, rateLimitPerDayLLM, (req, res
 
     const body = {
         "model": req.body.model, // Use the 'model' parameter from the request
-        "prompt": req.body.prompt // Use the 'prompt' parameter from the request
+        "prompt": req.body.prompt, // Use the 'prompt' parameter from the request
     }
 
-    console.log('Sending request to the API:', LLM_API_URL);
+    console.log('[+] Sending request to the API:', LLM_API_PROMPT_URL);
+    console.log('    With data:', body);
     needle(
         'post',
-        LLM_API_URL,
+        LLM_API_PROMPT_URL,
         body, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${LLM_API_KEY}`
-        }
-    })
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${LLM_API_KEY}`
+            }
+        })
+        .then(response => {
+            console.log('Response received')
+            console.log(response.body);
+            res.json(response.body); // Send response to client
+        })
+        .catch(error => {
+            console.log('Error occurred');
+            console.error(error); // Send error to client
+            res.status(500).send('An error occurred while making the request to the LLM API');
+        });
+});
+
+app.post('/api/llm/chat', rateLimitPerMinuteLLM, rateLimitPerDayLLM, (req, res) => {
+    console.log('[+] Received request to /api/llm/chat');
+
+    const body = {
+        "model": req.body.model, // Use the 'model' parameter from the request
+        "messages": req.body.messages, // Use the 'role' parameter from the request
+    }
+
+    console.log('[+] Sending request to the API:', LLM_API_CHAT_URL);
+    console.log('    With data:', body);
+
+    needle(
+        'post',
+        LLM_API_CHAT_URL,
+        body, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${LLM_API_KEY}`
+            }
+        })
         .then(response => {
             console.log('Response received')
             console.log(response.body);
