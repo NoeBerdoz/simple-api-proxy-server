@@ -64,7 +64,7 @@ app.post('/api/llm/prompt', rateLimitPerMinuteLLM, rateLimitPerDayLLM, (req, res
             }
         })
         .then(response => {
-            console.log('Response received')
+            console.log('[+] Response received from API ', LLM_API_PROMPT_URL)
             console.log(response.body);
             res.json(response.body); // Send response to client
         })
@@ -96,8 +96,9 @@ app.post('/api/llm/chat', rateLimitPerMinuteLLM, rateLimitPerDayLLM, (req, res) 
             }
         })
         .then(response => {
-            console.log('Response received')
+            console.log('[+] Response received from the API ', LLM_API_CHAT_URL)
             console.log(response.body);
+            console.log(response.body.choices[0].message);
             res.json(response.body); // Send response to client
         })
         .catch(error => {
