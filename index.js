@@ -114,7 +114,8 @@ app.get('/api/search', rateLimitPerDayGoogle, (req, res) => {
     needle('get', url)
         .then(response => {
             console.log('[+] Google Search Response received');
-            console.log(url);
+            console.log('    from: ', url);
+            console.log(response.body);
             res.json(response.body) // Send response to client
         })
         .catch(error => {
