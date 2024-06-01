@@ -43,6 +43,10 @@ const rateLimitPerDayGoogle = setRateLimit({
     headers: true,
 });
 
+app.get('/', (req, res) => {
+    res.send("Nothing to see here.");
+});
+
 // Route to handle requests to /api/llm/prompt
 app.post('/api/llm/prompt', rateLimitPerMinuteLLM, rateLimitPerDayLLM, (req, res) => {
     console.log('[+] Received request to /api/llm/prompt');
